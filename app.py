@@ -18,10 +18,7 @@ st.set_page_config(page_title="Artist Exploration", layout = 'wide')
 
 #Load in data and section off by artist
 DATA_PATH = 'app_data.csv'
-
-#Filter out artists with less than 40 songs and less than 10 unique years
-df = df.groupby('artists').filter(lambda x: len(x) >= 40).reset_index(drop = True)
-df = df.groupby('artists').filter(lambda x: x['year'].nunique() >= 10)
+df = pd.read_csv(DATA_PATH)
 
 #Creates a unique list for every artist
 artist_list = df['artists'].unique().tolist()
