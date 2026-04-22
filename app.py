@@ -14,23 +14,31 @@ plt.rcParams.update({
 })
 plt.style.use('dark_background')
 
+# Custom text style
 st.set_page_config(page_title="Artist Exploration", layout = 'wide')
 
 #Load in data and section off by artist
 DATA_PATH = 'app_data.csv'
 df = pd.read_csv(DATA_PATH)
 
+#Change limit to color df
+pd.set_option("styler.render.max_elements", 600000)
+
 #Creates a unique list for every artist
 artist_list = df['artists'].unique().tolist()
 artist_list.insert(0, 'All Artists')
+
+#Title
+st.title("Spotify Artist Exploration")
 
 #Dropdown to select an artist
 artist = st.selectbox('Select an artist:', options = artist_list)
 
 #ALL ARTISTS
 if artist == 'All Artists':
-
+    # Print the df
     st.dataframe(df)
+    
     tab1, tab2, tab3 = st.tabs(['Length','Acousticness', 'Tempo'])
     
     acous_avg = df.groupby('year')['acousticness'].mean().reset_index()
