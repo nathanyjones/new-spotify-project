@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import ast 
 
+from spotify_tools import recommend_similar
+
 #Plot formatting
 plt.rcParams.update({
     "figure.facecolor": (0, 0, 0, 0),  # (R, G, B, Alpha)
@@ -17,12 +19,10 @@ plt.style.use('dark_background')
 # Custom text style
 st.set_page_config(page_title="Artist Exploration", layout = 'wide')
 
-#Load in data and section off by artist
+#Load in data
 DATA_PATH = 'app_data.csv'
 df = pd.read_csv(DATA_PATH)
 
-#Change limit to color df
-pd.set_option("styler.render.max_elements", 600000)
 
 #Creates a unique list for every artist
 artist_list = df['artists'].unique().tolist()
@@ -111,13 +111,19 @@ if artist == 'All Artists':
 # INDIVIDUAL ARTISTS
 else: 
     
-    #Reduces the DataFrame to just the selected artist
+    # Reduces the DataFrame to just the selected artist
     df_selected = df[df['artists'] == artist].reset_index()
     #Must have at least 3 songs in the year to count
     df_selected = df_selected.groupby('year').filter(lambda x: len(x) >= 3).reset_index(drop = True)
 
-    #Display dataframe on the app
+    # Display dataframe on the app
     st.dataframe(df_selected)
+
+    # Add a button using custom function to display song recs
+    song = st.selectbox("Pick a song:", df_selected['name'])
+    if st.button("Recommend"):
+        recs = recommend_similar(df, song)
+        st.dataframe(recs)
 
     tab1, tab2, tab3 = st.tabs(['Length','Acousticness', 'Tempo'])
     with tab1:

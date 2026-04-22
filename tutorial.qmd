@@ -1,0 +1,83 @@
+# Spotify Data Tutorial
+
+This package allows users to:
+
+- Load Spotify data
+- Clean and prepare datasets
+- Analyze artist and song patterns
+- Generate recommendations
+
+#### Getting Started
+To begin using the data set, follow this [link](https://byu.box.com/s/laorpu7fwmi2wbk9qtfodrf104h7sxhr)
+to download the raw CSV. This CSV contains a huge dataset for nearly 170,000 different songs. This dataset was obtained through the *SpotifyAPI* before Spotify enahanced security and limited features in 2024. After downloading the file, load it into your program.
+```{python}
+import pandas as pd
+
+df = pd.read_csv('data.csv')
+```
+**Ensure the CSV file is in your data/ folder or somewhere you can work with it**
+
+#### Data Cleanup
+Once the data is loaded in, it's time for some basic clean-up. The artists are formatted as a list within the column (to account for songs with multiple artists or features). This makes analysis difficult, so we need to clean that up.
+
+```{python}
+from spotify_tools.clean import fix_artists
+
+df = fix_artists(df)
+```
+This function will seperate the artists from the list into seperate entries in the dataframe making data manipulation much easier.
+
+170,000 songs is a lot to work with. For this specific analysis to lower that number, it was decided to drop all classical or instrumental artists. Additionally, artists with less than 40 songs don't work great for individual analysis, so they will be dropped from the list as well.
+
+```{python}
+from spotify_tools.clean import reduce_list
+
+df = reduce_list(df)
+```
+
+Now, some optional data cleaning. `column_cleaning()` is a function that will convert the *duration_ms* column to senconds (because only fancy scientist work with miliseconds). It also converts the 1's and 0's in the *explicit* column to No and Yes. Then the dataset is ordered by artist name and specific variables are selected for this analysis. Only these columns are used for analysis; additional columns are excluded for consistency and performance.
+
+```{python}
+from spotify_tools.clean import column_cleaning
+
+df = column_cleaning(df)
+
+df = df.sort_values(by ='artists').reset_index(drop = True)
+df = df[['name', 'artists', 'year', 'duration_s', 'tempo', 'acousticness', 'energy', 'valence', 'key', 'popularity', 'explicit']]
+df = df.drop_duplicates(subset=['name', 'artists']).reset_index(drop=True)
+```
+
+#### Basic Analysis
+After the data is cleaned-up, we can now do some basic analysis. The main questions that this analysis aimed to answer were focused on **artist and general music consistency.** This dataset provided plenty of variables to work with regarding song consistency. First we can look at individual artists and see their summary stats.
+
+```{python}
+from spotify_tools.analysis import artist_summary
+
+artist_summary(df, artist = "Drake")
+```
+Running this command with a valid artist name will return the summary statistics for that artist.
+
+Additionally, we can see the variability of each artist by using `artist_variability()`. This function calculates the standard deviation of key audio features for each artist and combines them into an overall variability score.
+``` {python}
+from spotify_tools.analysis import artist_variability
+
+artist_variability(df)
+```
+
+Additional commands for analysis:
+- `top_songs(df, feature, n)` → Returns top N songs ranked by a feature  
+- `feature_trend(df, feature)` → Shows how a feature changes over time  
+- `feature_correlations(df)` → Displays correlation matrix of audio feature
+
+*All of these functions can be loaded in through the `spotify_tools.analysis` package*
+
+#### Extra Features
+While designing the app, I feature I wanted to add was the ability to find songs similar to the selected song. The command `recommend_similar()` does exactly that. By running the below command, you will get *n* amounts of songs similar to your selected song.
+```{python}
+from spotify_tools.recommend import recommend_similar
+
+recommend_similar(df, song_name = "God's Plan", n = 5)
+```
+
+##### Important Note
+When using functions that require inputs such as **feature names, artist names, or song titles**, values must be passed as strings in quotation marks.
