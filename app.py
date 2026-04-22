@@ -20,7 +20,7 @@ plt.style.use('dark_background')
 st.set_page_config(page_title="Artist Exploration", layout = 'wide')
 
 #Load in data
-DATA_PATH = 'app_data.csv'
+DATA_PATH = 'data/app_data.csv'
 df = pd.read_csv(DATA_PATH)
 
 
